@@ -22,7 +22,9 @@ namespace Farkler
         public void go()
         {
             Console.WriteLine("Farkler!");
-            var x = ExpectedValueCalc.RollPermutations(1);
+            var x = Dice.RollTwo;
+            //var t = Farkle.GetActions(new Roll { 1,2,3,4,5,6 });
+            var actions = Farkle.GetActions(new Roll { 2, 2, 2, 2, 2, 2 });
 
             //Console.WriteLine(ExpectedValueCalc.EV(6, 0));
             //Console.WriteLine(ExpectedValueCalc.EV(2, 50));
