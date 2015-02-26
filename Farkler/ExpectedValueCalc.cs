@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -232,6 +233,20 @@ namespace Farkler
             ev = Math.Max(ev, p);
             EVCache.Add(key, ev);
             return ev;
+        }
+
+        static int[] Faces = { 1, 2, 3, 4, 5, 6 };
+
+        public static IEnumerable<int[]> RollPermutations(int dice)
+        {
+            return
+                from a in Faces
+                from b in Faces
+                from c in Faces
+                from d in Faces
+                from e in Faces
+                from f in Faces
+                select new int[]{a,b,c,d,e,f};
         }
 
         static T Max<T>(params T[] values)

@@ -22,8 +22,10 @@ namespace Farkler
         public void go()
         {
             Console.WriteLine("Farkler!");
-            Console.WriteLine(ExpectedValueCalc.EV(6, 0));
-            Console.WriteLine(ExpectedValueCalc.EV(2, 50));
+            var x = ExpectedValueCalc.RollPermutations(1);
+
+            //Console.WriteLine(ExpectedValueCalc.EV(6, 0));
+            //Console.WriteLine(ExpectedValueCalc.EV(2, 50));
             Console.ReadLine();
         }
     }
