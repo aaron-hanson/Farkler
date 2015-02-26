@@ -19,21 +19,47 @@ namespace Farkler
         public static List<Action> Gen(Roll roll)
         {
             var actions = new List<Action>();
+            var dice = roll.Count();
 
-
+            for (int subdice = 1, diceToRoll = dice - subdice; subdice <= dice; subdice++, diceToRoll--)
+            {
+                var comboss = Dice.RollCombinations(subdice, roll);
+                var combos = comboss.Distinct();
+                foreach (var subroll in combos)
+                {
+                    var rollcopy = new Roll(subroll);
+                    var score = ValidScore(rollcopy);
+                    if (score > 0)
+                    {
+                        actions.Add(new Action(score, diceToRoll));
+                    }
+                }
+            }
 
             return actions;
         }
 
-        public static int? ValidScore(Roll roll)
+        public static int ValidScore(Roll roll)
         {
             if (roll.Count == 6 && roll.Distinct<int>().Count() == 6) return 1500;
 
-            var triples = roll.GroupBy(x => x).Where(x => x.Count() == 3);
+            var score = 0;
 
-            
+            if (roll.GroupBy(x => x).Where(x => x.Count() == 6).Any())
+            {
+                return roll[0] * (roll[0] == 1 ? 2000 : 200);
+            }
+           
+            foreach (var triple in roll.GroupBy(x => x).Where(x => x.Count() >= 3))
+            {
+                triple.Take(3).ToList().ForEach(x => roll.Remove(x));
+                score += triple.Key * (triple.Key == 1 ? 1000 : 100);
+            }
 
-            return null;
+            roll.Where(x => x == 1).ToList().ForEach(x => { roll.Remove(x); score += 100; });
+            roll.Where(x => x == 5).ToList().ForEach(x => { roll.Remove(x); score += 50; });
+
+            return roll.Any() ? 0 : score;
         }
 
         public static List<Action> GenerateActions(Roll roll, Action baseAction = null, ActionLevel level = ActionLevel.Triples, int numOnes = 0, int numFives = 0)
