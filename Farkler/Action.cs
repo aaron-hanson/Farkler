@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Farkler
 {
-    class Action
+    class Action : IEquatable<Action>
     {
         public int ScoreToAdd { get; set; }
         public int DiceToRoll { get; set; }
@@ -15,6 +15,22 @@ namespace Farkler
         {
             ScoreToAdd = s;
             DiceToRoll = d;
+        }
+
+        public Action Combine(Action oldAction)
+        {
+            if (oldAction == null) return this;
+            else return new Action(ScoreToAdd + oldAction.ScoreToAdd, DiceToRoll);
+        }
+
+        public bool Equals(Action other)
+        {
+            return ScoreToAdd.Equals(other.ScoreToAdd) && DiceToRoll.Equals(other.DiceToRoll);
+        }
+
+        public override int GetHashCode()
+        {
+            return ScoreToAdd.GetHashCode() ^ DiceToRoll.GetHashCode();
         }
     }
 }

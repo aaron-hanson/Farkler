@@ -7,47 +7,76 @@ using System.Threading.Tasks;
 
 namespace Farkler
 {
+    enum ActionLevel
+    {
+        None,
+        Singles,
+        Triples
+    }
+
     class Farkle
     {
-        public static ICollection<Action> GetActions(Roll roll)
+        public static List<Action> Gen(Roll roll)
         {
-            Collection<Action> actions = new Collection<Action>();
+            var actions = new List<Action>();
+
+
+
+            return actions;
+        }
+
+        public static int? ValidScore(Roll roll)
+        {
+            if (roll.Count == 6 && roll.Distinct<int>().Count() == 6) return 1500;
+
+            var triples = roll.GroupBy(x => x).Where(x => x.Count() == 3);
+
+            
+
+            return null;
+        }
+
+        public static List<Action> GenerateActions(Roll roll, Action baseAction = null, ActionLevel level = ActionLevel.Triples, int numOnes = 0, int numFives = 0)
+        {
+            var actions = new List<Action>();
             var dice = roll.Count();
 
-            var triples = roll.GroupBy(x => x).Where(x => x.Count() >= 3);
-            var numOnes = roll.Count(x => x == 1);
-            var numFives = roll.Count(x => x == 5);
+            // hot dice!
+            if (roll.Count == 6 && roll.Distinct<int>().Count() == 6) actions.Add(new Action(1500, 0));
 
-            bool hasOnes = numOnes > 0;
-            bool hasFives = numFives > 0;
-            
-            bool hasTriples = triples.Any();
-
-            // farkled?
-            if (!hasOnes && !hasFives && !hasTriples) return actions;
-
-            // hot dice?
-            if (roll.Count == 6 && roll.Distinct<int>().Count() == 6) actions.Add(new Action(1500, 6));
-
-            //ways to keep one die
-            if (hasOnes) actions.Add(new Action(100, dice - 1));
-            if (hasFives) actions.Add(new Action(50, dice - 1));
-
-            //ways to keep two dice
-            if (numOnes >= 2) actions.Add(new Action(200, dice - 2));
-            if (numFives >= 2) actions.Add(new Action(100, dice - 2));
-            if (hasOnes && hasFives) actions.Add(new Action(150, dice - 2));
-
-            //ways to keep three dice
-            foreach (var triple in triples)
+            //triples
+            if (level >= ActionLevel.Triples)
             {
-                int score = triple.Key == 1 ? 1000 : triple.Key * 100;
-                actions.Add(new Action(score, dice - 3));
-                if (triple.Count() == 6) actions.Add(new Action(score * 2, 6));
+                var triples = roll.GroupBy(x => x).Where(x => x.Count() >= 3);
+                foreach (var triple in triples)
+                {
+                    int score = triple.Key == 1 ? 1000 : triple.Key * 100;
+                    var act = new Action(score, dice - 3).Combine(baseAction);
+                    actions.Add(act);
+                    actions.AddRange(GenerateActions(roll.Narrow(triple.Take(3).ToList()), act, ActionLevel.Triples, numOnes, numFives));
+                }
+            }
+
+            // singles
+            if (level >= ActionLevel.Singles)
+            {
+                if (numOnes < 2 && roll.Any(x => x == 1))
+                {
+                    var act = new Action(100, dice - 1).Combine(baseAction);
+                    actions.Add(act);
+                    actions.AddRange(GenerateActions(roll.Narrow(1), act, ActionLevel.Singles, numOnes + 1, numFives));
+                }
+                if (numFives < 2 && roll.Any(x => x == 5))
+                {
+                    var act = new Action(50, dice - 1).Combine(baseAction);
+                    actions.Add(act);
+                    actions.AddRange(GenerateActions(roll.Narrow(5), act, ActionLevel.Singles, numOnes, numFives + 1));
+                }
             }
 
             return actions;
         }
+
 
     }
 }
