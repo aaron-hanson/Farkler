@@ -23,6 +23,8 @@ namespace Farkler
         {
             Console.WriteLine("Farkler!");
 
+            MrSmartyPants.Play();
+
             var ev = ExpectedValueCalc.EV(6, 0);
             Console.WriteLine();
             Console.WriteLine(ev);

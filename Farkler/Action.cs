@@ -23,6 +23,11 @@ namespace Farkler
             else return new Action(ScoreToAdd + oldAction.ScoreToAdd, DiceToRoll);
         }
 
+        public override string ToString()
+        {
+            return string.Format("{0}d {1}p", DiceToRoll, ScoreToAdd);
+        }
+
         public bool Equals(Action other)
         {
             return ScoreToAdd.Equals(other.ScoreToAdd) && DiceToRoll.Equals(other.DiceToRoll);

@@ -12,6 +12,10 @@ namespace Farkler
         public Roll() : base() { }
         public Roll(Roll roll) : base(roll) { }
         public Roll(IEnumerable<int> roll) : base(roll) { }
+        public Roll(string roll) : base()
+        {
+            foreach (char c in roll) Add(int.Parse(c.ToString()));
+        }
 
         public Roll Narrow(int remove)
         {
@@ -27,6 +31,11 @@ namespace Farkler
             return newRoll;
         }
 
+        public override string ToString()
+        {
+            return this.OrderBy(x => x).Select(x => x.ToString()).Aggregate((x, y) => x + y);
+        }
+
         public bool Equals(Roll other)
         {
             return this.OrderBy(x => x).SequenceEqual(other.OrderBy(x => x));
@@ -40,6 +49,8 @@ namespace Farkler
 
     class Dice
     {
+        static Random rnd = new Random();
+
         static Roll Faces = new Roll { 1, 2, 3, 4, 5, 6 };
 
         public static List<Roll> RollOne = RollPermutations(1, Faces);
@@ -48,6 +59,11 @@ namespace Farkler
         public static List<Roll> RollFour = RollPermutations(4, Faces);
         public static List<Roll> RollFive = RollPermutations(5, Faces);
         public static List<Roll> RollSix = RollPermutations(6, Faces);
+
+        public static Roll RandomRoll(int dice)
+        {
+            return Permute[dice].ElementAt(rnd.Next(Permute[dice].Count));
+        }
 
         public static Dictionary<int, List<Roll>> Permute = new Dictionary<int, List<Roll>> {
             {1, RollOne},

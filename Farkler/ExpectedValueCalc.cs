@@ -13,7 +13,7 @@ namespace Farkler
 
         public static double EV(int d, double p)
         {
-            if (p >= 2000) return p;
+            if (p >= 1000) return p;
 
             double ev;
             Tuple<int, double> key = new Tuple<int,double>(d, p);

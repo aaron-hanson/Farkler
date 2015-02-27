@@ -28,8 +28,7 @@ namespace Farkler
 
             for (int subdice = 1, diceToRoll = dice - subdice; subdice <= dice; subdice++, diceToRoll--)
             {
-                var comboss = Dice.RollCombinations(subdice, roll);
-                var combos = comboss.Distinct();
+                var combos = Dice.RollCombinations(subdice, roll);
                 foreach (var subroll in combos)
                 {
                     int score;
