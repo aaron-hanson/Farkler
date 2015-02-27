@@ -16,6 +16,8 @@ namespace Farkler
         public const string ModeAutomatic = "ma";
         public const string ModeManual = "mm";
         public const string AddPlayer = "p";
+        public const string Bank = "b";
+        public const string Action = "a";
     }
 
     enum GameState
@@ -69,24 +71,28 @@ namespace Farkler
         static int TurnScore;
         static int DiceToRoll = 6;
         static Roll Roll;
-        static LinkedListNode<FarklePlayer> PlayerWithTheDice = null;
+        static List<Action> ActionsPossible = new List<Action>();
+        static Action ActionPicked;
+        static LinkedListNode<FarklePlayer> PlayerWithTheDice;
 
         public static void Interactive()
         {
             Players.AddLast(new FarklePlayer("MrSmartyPants", PlayerType.AI));
 
-            string cmd = string.Empty, cmdData = string.Empty;
+            string cmd = string.Empty, cmdData, cmdData2;
             while (!UserCommand.Quit.Equals(cmd))
             {
                 Console.Write("<farkler> $ ");
                 var cmdtext = Console.ReadLine().Split('-');
                 cmd = cmdtext[0];
                 cmdData = cmdtext.Length > 1 ? cmdtext[1] : null;
+                cmdData2 = cmdtext.Length > 2 ? cmdtext[2] : null;
 
                 switch (cmd)
                 {
                     case UserCommand.AddPlayer:
-                        if (cmdData == null) Console.WriteLine("ERR - (p) Usage:  p-PlayerName");
+                        if (State == GameState.InGame) Console.WriteLine("ERR - cannot add a player while a game is in progress.");
+                        else if (cmdData == null) Console.WriteLine("ERR - (p) Usage:  p-PlayerName");
                         else
                         {
                             Players.AddLast(new FarklePlayer(cmdData));
@@ -102,15 +108,44 @@ namespace Farkler
                         Console.WriteLine("Mode set to Manual");
                         break;
                     case UserCommand.RandomRoll:
-                        Roll = Dice.RandomRoll(DiceToRoll);
-                        Console.WriteLine(Roll);
+                        if (Roll != null) Console.WriteLine("ERR - cannot Roll until current roll is acted upon.");
+                        else
+                        {
+                            Roll = Dice.RandomRoll(DiceToRoll);
+                            ActionsPossible = Farkle.Gen(Roll);
+                            Console.WriteLine(Roll);
+                        }
                         break;
                     case UserCommand.Roll:
-                        if (cmdData == null || !Regex.IsMatch(cmdData, @"^\d{1,6}$")) Console.WriteLine("ERR - (r) Usage:  r-122245");
+                        if (Roll != null) Console.WriteLine("ERR - cannot Roll until current roll is acted upon.");
+                        else if (cmdData == null || !Regex.IsMatch(cmdData, @"^\d{" + DiceToRoll + "}$")) Console.WriteLine("ERR - (r) Usage:  r-122245");
                         else
                         {
                             Roll = new Roll(cmdData);
+                            ActionsPossible = Farkle.Gen(Roll);
                             Console.WriteLine(Roll);
+                        }
+                        break;
+                    case UserCommand.Action:
+                        if (PlayerWithTheDice.Value.Type != PlayerType.Human) Console.WriteLine("ERR - cannot perform Action, player is not human.");
+                        else if (Roll == null) Console.WriteLine("ERR - cannot perform Action, there is no roll on the table.");
+                        else if (cmdData == null) Console.WriteLine("ERR - (a) Usage:  a-400-3 (a-points-dicetoroll)");
+                        else
+                        {
+                            if (cmdData2 == null)
+                            {
+                                int points;
+                                if (!int.TryParse(cmdData, out points)) { Console.WriteLine("ERR - (a) Usage:  a-400-3 (a-points-dicetoroll)"); break; }
+                                if (!ActionsPossible.Any(x => x.ScoreToAdd == points)) { Console.WriteLine("ERR - no matching possible action."); break; }
+                                TurnScore += points;
+                                PlayerWithTheDice.Value.BankedScore += TurnScore;
+                                Console.WriteLine("Banked {0}, Score for {1} is now {2}", TurnScore, PlayerWithTheDice.Value.Name, PlayerWithTheDice.Value.BankedScore);
+                                EndTurn();
+                            }
+                            else
+                            {
+
+                            }
                         }
                         break;
                     case UserCommand.NewGame:
@@ -118,6 +153,7 @@ namespace Farkler
                         TurnScore = 0;
                         DiceToRoll = 6;
                         Roll = null;
+                        ActionsPossible.Clear();
                         PlayerWithTheDice = Players.First;
                         break;
                     case UserCommand.Quit:
@@ -132,34 +168,48 @@ namespace Farkler
 
                 if (Roll != null)
                 {
+                    bool turnIsOver = false;
                     switch (PlayerWithTheDice.Value.Type)
                     {
                         case PlayerType.AI:
-                            if (ChooseAndPerformAction())
-                            {
-                                DiceToRoll = 6;
-                                TurnScore = 0;
-                                PlayerWithTheDice = PlayerWithTheDice.Next;
-                            }
+                            turnIsOver = ChooseAndPerformAction();
+                            Roll = null;
+                            ActionsPossible.Clear();
                             break;
                         case PlayerType.Human:
+                            turnIsOver = false;
+                            if (!ActionsPossible.Any())
+                            {
+                                Console.WriteLine("{0} GOT FARKLED!", PlayerWithTheDice.Value.Name);
+                                turnIsOver = true;
+                            }
 
                             break;
                     }
-                    Roll = null;
+
+                    if (turnIsOver) EndTurn();
                 }
 
                 Console.WriteLine("\n### PLAYER={0}  Dice={1} Score={2} Turn={3} ###", PlayerWithTheDice.Value.Name, DiceToRoll, PlayerWithTheDice.Value.BankedScore, TurnScore);
+                if (Roll != null) Console.WriteLine(Roll);
 
 
 
             } //while
         }
 
+        static void EndTurn()
+        {
+            DiceToRoll = 6;
+            TurnScore = 0;
+            Roll = null;
+            ActionsPossible.Clear();
+            PlayerWithTheDice = PlayerWithTheDice.Next ?? Players.First;
+        }
+
         static bool ChooseAndPerformAction()
         {
-            List<Action> actions = Farkle.Gen(Roll);
-            if (!actions.Any())
+            if (!ActionsPossible.Any())
             {
                 Console.WriteLine("%%%% I GOT FARKLED!");
                 return true;
@@ -167,7 +217,7 @@ namespace Farkler
 
             double best = TurnScore;
             Action pick = null;
-            foreach (var act in actions)
+            foreach (var act in ActionsPossible)
             {
                 double ev = ExpectedValueCalc.EV(act.DiceToRoll, TurnScore + act.ScoreToAdd);
                 if (ev > best)
