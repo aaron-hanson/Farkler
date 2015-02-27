@@ -25,11 +25,11 @@ namespace Farkler
         {
             Console.WriteLine("Farkler!");
 
-            //Dictionary<Tuple<int, int>, double> evcache =
-            //    JsonConvert.DeserializeObject<Dictionary<Tuple<int, int>, double>>(File.ReadAllText("EVCache.json:"));
+            Dictionary<string, double> evcache =
+                JsonConvert.DeserializeObject<Dictionary<string, double>>(File.ReadAllText("EVCache.json"));
+            ExpectedValueCalc.EVCache = evcache;
 
-
-            //MrSmartyPants.Play();
+            MrSmartyPants.Play();
 
             var ev = ExpectedValueCalc.EV(6, 0);
             Console.WriteLine();
@@ -40,22 +40,12 @@ namespace Farkler
             Console.WriteLine("Combo Cache: " + Dice.RollComboCache.Count);
 
 
+            //string serialized = JsonConvert.SerializeObject(
+            //    ExpectedValueCalc.EVCache
+            //    .OrderBy(x => x.Key)
+            //    .ToDictionary(k => k.Key, v => v.Value));
+            //File.WriteAllText("EVCache.json", serialized);
 
-            string serialized = JsonConvert.SerializeObject(
-                ExpectedValueCalc.EVCache
-                .OrderBy(x => x.Key)
-                .ToDictionary(k => k.Key, v => v.Value));
-
-            Console.WriteLine(serialized.Length);
-
-            File.WriteAllText("EVCache.json", serialized);
-
-            //var acts = Farkle.Gen(new Roll { 1 });
-
-            //var actions = Farkle.GenerateActions(new Roll { 1, 1, 1, 1, 2, 3 }).Distinct();
-
-            //Console.WriteLine(ExpectedValueCalc.EV(6, 0));
-            //Console.WriteLine(ExpectedValueCalc.EV(2, 50));
             Console.ReadLine();
         }
     }

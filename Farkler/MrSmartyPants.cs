@@ -10,7 +10,6 @@ namespace Farkler
     {
         public static void Play()
         {
-            int bestTurn = 0;
             int score = 0;
             int dice = 6;
             while(true)
@@ -23,8 +22,7 @@ namespace Farkler
 
                 Roll roll = Dice.RandomRoll(dice);
                 Console.WriteLine(roll);
-                //Console.ReadLine();
-
+                
                 List<Action> actions = Farkle.Gen(roll);
 
                 if (actions.Count == 0)
@@ -32,6 +30,7 @@ namespace Farkler
                     Console.WriteLine("FARKLE!");
                     score = 0;
                     dice = 6;
+                    Console.ReadLine();
                     continue;
                 }
 
@@ -48,25 +47,21 @@ namespace Farkler
                     }
                     Console.WriteLine(ev);
                 }
-                if (pick == null) Console.WriteLine(">>> BANK --- " + score);
+
+                score += pick.ScoreToAdd;
+                if (best == score)
+                {
+                    Console.WriteLine(">>> STOP {0} BANK {1}", pick.ScoreToAdd, score);
+                    score = 0;
+                    dice = 6;
+                }
                 else
                 {
-                    if (best == score + pick.ScoreToAdd)
-                    {
-                        Console.WriteLine(">>> STOP {0} BANK {1}", pick.ScoreToAdd, score + pick.ScoreToAdd);
-                        score += pick.ScoreToAdd;
-                        if (score > bestTurn) { bestTurn = score; Console.ReadLine(); }
-                        score = 0;
-                        dice = 6;
-                    }
-                    else
-                    {
-                        score += pick.ScoreToAdd;
-                        dice = pick.DiceToRoll;
-                        Console.WriteLine(">>> {0}", pick);
-                    }
+                    dice = pick.DiceToRoll;
+                    Console.WriteLine(">>> {0}", pick);
                 }
-
+                
+                Console.ReadLine();
             }
         }
 
