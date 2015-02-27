@@ -41,7 +41,10 @@ namespace Farkler
 
 
 
-            string serialized = JsonConvert.SerializeObject(ExpectedValueCalc.EVCache);
+            string serialized = JsonConvert.SerializeObject(
+                ExpectedValueCalc.EVCache
+                .OrderBy(x => x.Key)
+                .ToDictionary(k => k.Key, v => v.Value));
 
             Console.WriteLine(serialized.Length);
 
