@@ -16,7 +16,6 @@ namespace Farkler
         public const string ModeAutomatic = "ma";
         public const string ModeManual = "mm";
         public const string AddPlayer = "p";
-        public const string Bank = "b";
         public const string Action = "a";
     }
 
