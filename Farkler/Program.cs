@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,7 +25,11 @@ namespace Farkler
         {
             Console.WriteLine("Farkler!");
 
-            MrSmartyPants.Play();
+            //Dictionary<Tuple<int, int>, double> evcache =
+            //    JsonConvert.DeserializeObject<Dictionary<Tuple<int, int>, double>>(File.ReadAllText("EVCache.json:"));
+
+
+            //MrSmartyPants.Play();
 
             var ev = ExpectedValueCalc.EV(6, 0);
             Console.WriteLine();
@@ -32,6 +38,14 @@ namespace Farkler
             Console.WriteLine("Action Cache: " + Farkle.GenCache.Count);
             Console.WriteLine("Score Cache: " + Farkle.ValidScoreCache.Count);
             Console.WriteLine("Combo Cache: " + Dice.RollComboCache.Count);
+
+
+
+            string serialized = JsonConvert.SerializeObject(ExpectedValueCalc.EVCache);
+
+            Console.WriteLine(serialized.Length);
+
+            File.WriteAllText("EVCache.json", serialized);
 
             //var acts = Farkle.Gen(new Roll { 1 });
 
