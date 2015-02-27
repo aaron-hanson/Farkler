@@ -13,6 +13,23 @@ namespace Farkler
 
         public static double EV(int d, double p)
         {
+            if (p >= 1000) return p;
+
+            double ev;
+            Tuple<int, double> key = new Tuple<int,double>(d, p);
+            if (EVCache.TryGetValue(key, out ev)) return ev;
+
+            ev = Dice.Permute[d]
+                .Average(x => Farkle.Gen(x)
+                    .Max(y => (double?)EV(y.DiceToRoll, p + y.ScoreToAdd)) ?? 0D);
+
+            ev = Math.Max(ev, p);
+            EVCache.Add(key, ev);
+            return ev;
+        }
+
+        public static double EVOld(int d, double p)
+        {
             if (p >= 10000) return p;
 
             double ev;
@@ -22,10 +39,13 @@ namespace Farkler
             switch (d)
             {
                 case 1:
-                    ev = (
-                        EV(6, p+50) + // 5
-                        EV(6, p+100)  // 1
-                        ) / 6D;
+                    //ev = (
+                    //    EV(6, p+50) + // 5
+                    //    EV(6, p+100)  // 1
+                    //    ) / 6D;
+                    ev = Dice.RollOne
+                        .Average(x => Farkle.Gen(x)
+                            .Max(y => (double?)EV(y.DiceToRoll, p + y.ScoreToAdd)) ?? 0D);
                     break;
                 case 2:
                     ev = (

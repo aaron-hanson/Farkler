@@ -16,9 +16,14 @@ namespace Farkler
 
     class Farkle
     {
+        public static Dictionary<Roll, List<Action>> GenCache = new Dictionary<Roll, List<Action>>();
         public static List<Action> Gen(Roll roll)
         {
-            var actions = new List<Action>();
+            List<Action> actions;
+            if (GenCache.TryGetValue(roll, out actions)) return actions;
+
+            actions = new List<Action>();
+            
             var dice = roll.Count();
 
             for (int subdice = 1, diceToRoll = dice - subdice; subdice <= dice; subdice++, diceToRoll--)
@@ -27,18 +32,25 @@ namespace Farkler
                 var combos = comboss.Distinct();
                 foreach (var subroll in combos)
                 {
-                    var rollcopy = new Roll(subroll);
-                    var score = ValidScore(rollcopy);
+                    int score;
+                    if (!ValidScoreCache.TryGetValue(subroll, out score))
+                    {
+                        Roll subrollcopy = new Roll(subroll);
+                        score = ValidScore(subrollcopy);
+                        ValidScoreCache.Add(subroll, score);
+                    }
                     if (score > 0)
                     {
-                        actions.Add(new Action(score, diceToRoll));
+                        actions.Add(new Action(score, diceToRoll == 0 ? 6 : diceToRoll));
                     }
                 }
             }
 
+            GenCache.Add(roll, actions);
             return actions;
         }
 
+        private static Dictionary<Roll, int> ValidScoreCache = new Dictionary<Roll, int>();
         public static int ValidScore(Roll roll)
         {
             if (roll.Count == 6 && roll.Distinct<int>().Count() == 6) return 1500;

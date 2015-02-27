@@ -23,7 +23,9 @@ namespace Farkler
         {
             Console.WriteLine("Farkler!");
 
-            var acts = Farkle.Gen(new Roll { 1, 1, 1, 1, 2, 3 });
+            var ev = ExpectedValueCalc.EV(6, 0);
+
+            var acts = Farkle.Gen(new Roll { 1 });
 
             var actions = Farkle.GenerateActions(new Roll { 1, 1, 1, 1, 2, 3 }).Distinct();
 
