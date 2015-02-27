@@ -83,7 +83,7 @@ namespace Farkler
             while (!UserCommand.Quit.Equals(cmd))
             {
                 Console.Write("<farkler> $ ");
-                var cmdtext = Console.ReadLine().Split('-');
+                var cmdtext = Console.ReadLine().Split(' ');
                 cmd = cmdtext[0];
                 cmdData = cmdtext.Length > 1 ? cmdtext[1] : null;
                 cmdData2 = cmdtext.Length > 2 ? cmdtext[2] : null;
@@ -132,11 +132,13 @@ namespace Farkler
                         else if (cmdData == null) Console.WriteLine("ERR - (a) Usage:  a-400-3 (a-points-dicetoroll)");
                         else
                         {
+                            int points;
+                            if (!int.TryParse(cmdData, out points)) { Console.WriteLine("ERR - (a) Usage:  a-400-3 (a-points-dicetoroll)"); break; }
+                            if (!ActionsPossible.Any(x => x.ScoreToAdd == points)) { Console.WriteLine("ERR - no matching possible action."); break; }
+
                             if (cmdData2 == null)
                             {
-                                int points;
-                                if (!int.TryParse(cmdData, out points)) { Console.WriteLine("ERR - (a) Usage:  a-400-3 (a-points-dicetoroll)"); break; }
-                                if (!ActionsPossible.Any(x => x.ScoreToAdd == points)) { Console.WriteLine("ERR - no matching possible action."); break; }
+                                if (TurnScore + points < 300) { Console.WriteLine("ERR - cannot bank less than 300 points."); break; }
                                 TurnScore += points;
                                 PlayerWithTheDice.Value.BankedScore += TurnScore;
                                 Console.WriteLine("Banked {0}, Score for {1} is now {2}", TurnScore, PlayerWithTheDice.Value.Name, PlayerWithTheDice.Value.BankedScore);
@@ -144,7 +146,16 @@ namespace Farkler
                             }
                             else
                             {
+                                int dice;
+                                if (!int.TryParse(cmdData2, out dice)) { Console.WriteLine("ERR - (a) Usage:  a-400-3 (a-points-dicetoroll)"); break; }
+                                if (!ActionsPossible.Any(x => x.ScoreToAdd == points && x.DiceToRoll == dice)) { Console.WriteLine("ERR - no matching possible action."); break; }
 
+                                TurnScore += points;
+                                DiceToRoll = dice;
+                                Roll = Dice.RandomRoll(DiceToRoll);
+                                ActionsPossible = Farkle.Gen(Roll);
+                                Console.WriteLine("Stashed {0} and rolling {1} dice.", points, dice);
+                                Console.WriteLine(Roll);
                             }
                         }
                         break;
@@ -236,7 +247,7 @@ namespace Farkler
             }
             else
             {
-                Console.WriteLine("%%%%% I CHOOSE TO SCORE {0} AND ROLL {1} DICE", pick.ScoreToAdd, pick.DiceToRoll);
+                Console.WriteLine("%%%%% I CHOOSE TO STASH {0} AND ROLL {1} DICE", pick.ScoreToAdd, pick.DiceToRoll);
                 DiceToRoll = pick.DiceToRoll;
                 return false;
             }
