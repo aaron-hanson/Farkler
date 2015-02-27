@@ -9,11 +9,11 @@ namespace Farkler
 {
     class ExpectedValueCalc
     {
-        private static Dictionary<Tuple<int, double>, double> EVCache = new Dictionary<Tuple<int,double>,double>();
+        public static Dictionary<Tuple<int, double>, double> EVCache = new Dictionary<Tuple<int,double>,double>();
 
         public static double EV(int d, double p)
         {
-            if (p >= 1000) return p;
+            if (p >= 2000) return p;
 
             double ev;
             Tuple<int, double> key = new Tuple<int,double>(d, p);
@@ -23,8 +23,9 @@ namespace Farkler
                 .Average(x => Farkle.Gen(x)
                     .Max(y => (double?)EV(y.DiceToRoll, p + y.ScoreToAdd)) ?? 0D);
 
-            ev = Math.Max(ev, p);
+            ev = p < 300 ? ev : Math.Max(ev, p);
             EVCache.Add(key, ev);
+            Console.Write('.');
             return ev;
         }
 

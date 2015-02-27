@@ -23,8 +23,13 @@ namespace Farkler
         {
             Console.WriteLine("Farkler!");
 
-            var ev = ExpectedValueCalc.EV(2, 250);
+            var ev = ExpectedValueCalc.EV(6, 0);
+            Console.WriteLine();
             Console.WriteLine(ev);
+            Console.WriteLine("EV Cache: " + ExpectedValueCalc.EVCache.Count);
+            Console.WriteLine("Action Cache: " + Farkle.GenCache.Count);
+            Console.WriteLine("Score Cache: " + Farkle.ValidScoreCache.Count);
+            Console.WriteLine("Combo Cache: " + Dice.RollComboCache.Count);
 
             //var acts = Farkle.Gen(new Roll { 1 });
 

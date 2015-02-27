@@ -50,7 +50,7 @@ namespace Farkler
             return actions;
         }
 
-        private static Dictionary<Roll, int> ValidScoreCache = new Dictionary<Roll, int>();
+        public static Dictionary<Roll, int> ValidScoreCache = new Dictionary<Roll, int>();
         public static int ValidScore(Roll roll)
         {
             if (roll.Count == 6 && roll.Distinct<int>().Count() == 6) return 1500;

@@ -11,6 +11,7 @@ namespace Farkler
     {
         public Roll() : base() { }
         public Roll(Roll roll) : base(roll) { }
+        public Roll(IEnumerable<int> roll) : base(roll) { }
 
         public Roll Narrow(int remove)
         {
@@ -105,11 +106,21 @@ namespace Farkler
             }
         }
 
-        public static IEnumerable<Roll> RollCombinations(int dice, Roll roll)
+        public static Dictionary<Tuple<int, Roll>, List<Roll>> RollComboCache = new Dictionary<Tuple<int, Roll>, List<Roll>>();
+        public static List<Roll> RollCombinations(int dice, Roll roll)
         {
-            if (dice == roll.Count()) return new List<Roll> { roll };
+            Tuple<int, Roll> key = new Tuple<int, Roll>(dice, roll);
+            List<Roll> combos;
+            if (RollComboCache.TryGetValue(key, out combos)) return combos;
 
-            List<Roll> combos = new List<Roll>();
+            if (dice == roll.Count())
+            {
+                combos = new List<Roll> { new Roll(roll.OrderBy(x => x)) };
+                RollComboCache.Add(key, combos);
+                return combos;
+            }
+
+            combos = new List<Roll>();
             for (int a = 0; a < roll.Count; a++ )
             {
                 if (dice == 1) { combos.Add(new Roll { roll[a] }); continue; }
@@ -139,6 +150,8 @@ namespace Farkler
                 }
 
             }
+            combos = combos.Distinct().ToList();
+            RollComboCache.Add(key, combos);
             return combos;
         }
 
