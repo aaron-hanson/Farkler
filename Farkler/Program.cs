@@ -23,21 +23,19 @@ namespace Farkler
 
         public void go()
         {
-            Console.WriteLine("Farkler!");
-
             Dictionary<string, double> evcache =
                 JsonConvert.DeserializeObject<Dictionary<string, double>>(File.ReadAllText("EVCache.json"));
             ExpectedValueCalc.EVCache = evcache;
 
-            MrSmartyPants.Play();
+            MrSmartyPants.Interactive();
 
-            var ev = ExpectedValueCalc.EV(6, 0);
-            Console.WriteLine();
-            Console.WriteLine(ev);
-            Console.WriteLine("EV Cache: " + ExpectedValueCalc.EVCache.Count);
-            Console.WriteLine("Action Cache: " + Farkle.GenCache.Count);
-            Console.WriteLine("Score Cache: " + Farkle.ValidScoreCache.Count);
-            Console.WriteLine("Combo Cache: " + Dice.RollComboCache.Count);
+            //var ev = ExpectedValueCalc.EV(6, 0);
+            //Console.WriteLine();
+            //Console.WriteLine(ev);
+            //Console.WriteLine("EV Cache: " + ExpectedValueCalc.EVCache.Count);
+            //Console.WriteLine("Action Cache: " + Farkle.GenCache.Count);
+            //Console.WriteLine("Score Cache: " + Farkle.ValidScoreCache.Count);
+            //Console.WriteLine("Combo Cache: " + Dice.RollComboCache.Count);
 
 
             //string serialized = JsonConvert.SerializeObject(
@@ -45,8 +43,7 @@ namespace Farkler
             //    .OrderBy(x => x.Key)
             //    .ToDictionary(k => k.Key, v => v.Value));
             //File.WriteAllText("EVCache.json", serialized);
-
-            Console.ReadLine();
         }
+
     }
 }
