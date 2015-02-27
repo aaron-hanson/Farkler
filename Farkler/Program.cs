@@ -23,15 +23,16 @@ namespace Farkler
         {
             Console.WriteLine("Farkler!");
 
-            var ev = ExpectedValueCalc.EV(6, 0);
+            var ev = ExpectedValueCalc.EV(2, 250);
+            Console.WriteLine(ev);
 
-            var acts = Farkle.Gen(new Roll { 1 });
+            //var acts = Farkle.Gen(new Roll { 1 });
 
-            var actions = Farkle.GenerateActions(new Roll { 1, 1, 1, 1, 2, 3 }).Distinct();
+            //var actions = Farkle.GenerateActions(new Roll { 1, 1, 1, 1, 2, 3 }).Distinct();
 
             //Console.WriteLine(ExpectedValueCalc.EV(6, 0));
             //Console.WriteLine(ExpectedValueCalc.EV(2, 50));
-            //Console.ReadLine();
+            Console.ReadLine();
         }
     }
 }
