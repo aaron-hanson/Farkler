@@ -33,7 +33,7 @@ namespace Farkler
 
         public override string ToString()
         {
-            return "[ " + this.OrderBy(x => x).Select(x => x.ToString()).Aggregate((x, y) => x + ' ' + y) + " ]";
+            return "{ " + this.OrderBy(x => x).Select(x => x.ToString()).Aggregate((x, y) => x + "-" + y) + " }";
         }
 
         public bool Equals(Roll other)

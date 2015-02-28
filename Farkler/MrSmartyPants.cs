@@ -296,7 +296,7 @@ namespace Farkler
 
         static string CurrentPlayerInfo()
         {
-            return string.Format("{0}  <{1}>   [{2} {3}d]", PlayerWithTheDice.Value.Name, PlayerWithTheDice.Value.BankedScore, TurnScore, DiceToRoll);
+            return string.Format("{0}  <{1}>  [{2}]", PlayerWithTheDice.Value.Name, PlayerWithTheDice.Value.BankedScore, TurnScore);
         }
 
         static bool ChooseAndPerformAction()
