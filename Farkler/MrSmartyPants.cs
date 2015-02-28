@@ -115,7 +115,7 @@ namespace Farkler
                         else if (Players.Any(x => x.Name.Equals(cmdData))) WriteLine("ERR - player with that name already exists.");
                         else
                         {
-                            Players.AddLast(new FarklePlayer(cmdData));
+                            Players.AddFirst(new FarklePlayer(cmdData));
                             WriteLine("Added new player {0}, now there are {1} players.", cmdData, Players.Count);
                         }
                         break;
@@ -125,7 +125,7 @@ namespace Farkler
                         else if (Players.Any(x => x.Name.Equals(cmdData))) WriteLine("ERR - player with that name already exists.");
                         else
                         {
-                            Players.AddLast(new FarklePlayer(cmdData, PlayerType.AI));
+                            Players.AddFirst(new FarklePlayer(cmdData, PlayerType.AI));
                             WriteLine("Added new AI player {0}, now there are {1} players.", cmdData, Players.Count);
                         }
                         break;
@@ -289,7 +289,7 @@ namespace Farkler
 
         static string CurrentPlayerInfo()
         {
-            return string.Format("{0} [ {1} ] [{2} {3}d]", PlayerWithTheDice.Value.Name, PlayerWithTheDice.Value.BankedScore, TurnScore, DiceToRoll);
+            return string.Format("{0}  <{1}>   [{2} {3}d]", PlayerWithTheDice.Value.Name, PlayerWithTheDice.Value.BankedScore, TurnScore, DiceToRoll);
         }
 
         static bool ChooseAndPerformAction()
