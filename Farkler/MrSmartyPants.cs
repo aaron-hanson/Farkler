@@ -136,8 +136,7 @@ namespace Farkler
                         if (Roll != null) Console.WriteLine("ERR - cannot Roll until current roll is acted upon.");
                         else
                         {
-                            Roll = Dice.RandomRoll(DiceToRoll);
-                            ActionsPossible = Farkle.Gen(Roll);
+                            RandomRoll();
                             Console.WriteLine(Roll);
                         }
                         break;
@@ -177,9 +176,8 @@ namespace Farkler
 
                                 TurnScore += points;
                                 DiceToRoll = dice;
-                                Roll = Dice.RandomRoll(DiceToRoll);
-                                ActionsPossible = Farkle.Gen(Roll);
                                 Console.WriteLine("Stashed {0} and rolling {1} dice.", points, dice);
+                                RandomRoll();
                                 Console.WriteLine(Roll);
                             }
                         }
@@ -239,6 +237,12 @@ namespace Farkler
 
 
             } //while
+        }
+
+        static void RandomRoll()
+        {
+            Roll = Dice.RandomRoll(DiceToRoll);
+            ActionsPossible = Farkle.Gen(Roll);
         }
 
         static void EndTurn()
