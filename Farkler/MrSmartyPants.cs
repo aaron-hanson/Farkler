@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Farkler
@@ -106,6 +107,7 @@ namespace Farkler
                     RandomRoll();
                     Console.WriteLine(Roll);
                     cmd = string.Empty;
+                    Thread.Sleep(2000);
                 }
 
                 switch (cmd)
@@ -196,8 +198,7 @@ namespace Farkler
                     default:
                         break;
                 }
-                Console.WriteLine();
-
+                
                 if (GameState.NoGame.Equals(State)) continue;
 
                 if (Roll != null)
@@ -224,12 +225,13 @@ namespace Farkler
                     if (turnIsOver) EndTurn();
                 }
 
+                Console.WriteLine();
                 foreach (FarklePlayer p in Players)
                 {
                     Console.WriteLine("{0}{1}{2}", 
-                        p.Name.PadLeft(15), 
-                        p.BankedScore.ToString().PadLeft(7), 
-                        (PlayerWithTheDice.Value.Equals(p) ? TurnScore.ToString() + " [" + DiceToRoll + "d]" : "").PadLeft(12));    
+                        p.Name.PadLeft(15).PadRight(16),
+                        p.BankedScore.ToString().PadRight(7), 
+                        (PlayerWithTheDice.Value.Equals(p) ? TurnScore.ToString() + " [" + DiceToRoll + "d]" : ""));    
                 }
                 if (Roll != null) Console.WriteLine(Roll);
 
