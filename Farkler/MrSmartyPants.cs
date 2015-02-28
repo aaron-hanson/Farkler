@@ -78,14 +78,23 @@ namespace Farkler
         {
             Players.AddLast(new FarklePlayer("MrSmartyPants", PlayerType.AI));
 
-            string cmd = string.Empty, cmdData, cmdData2;
+            string cmd = string.Empty, cmdData = null, cmdData2 = null;
             while (!UserCommand.Quit.Equals(cmd))
             {
-                Console.Write("<farkler> $ ");
-                var cmdtext = Console.ReadLine().Split(' ');
-                cmd = cmdtext[0];
-                cmdData = cmdtext.Length > 1 ? cmdtext[1] : null;
-                cmdData2 = cmdtext.Length > 2 ? cmdtext[2] : null;
+                if (Mode == AIMode.Manual || State == GameState.NoGame || PlayerWithTheDice.Value.Type == PlayerType.Human)
+                {
+                    Console.Write("<farkler> $ ");
+                    var cmdtext = Console.ReadLine().Split(' ');
+                    cmd = cmdtext[0];
+                    cmdData = cmdtext.Length > 1 ? cmdtext[1] : null;
+                    cmdData2 = cmdtext.Length > 2 ? cmdtext[2] : null;
+                }
+                else
+                {
+                    Roll = Dice.RandomRoll(DiceToRoll);
+                    Console.WriteLine(Roll);
+                    cmd = string.Empty;
+                }
 
                 switch (cmd)
                 {
@@ -164,6 +173,7 @@ namespace Farkler
                         DiceToRoll = 6;
                         Roll = null;
                         ActionsPossible.Clear();
+                        Players.ToList().ForEach(x => x.BankedScore = 0);
                         PlayerWithTheDice = Players.First;
                         break;
                     case UserCommand.Quit:
@@ -200,7 +210,13 @@ namespace Farkler
                     if (turnIsOver) EndTurn();
                 }
 
-                Console.WriteLine("\n### PLAYER={0}  Dice={1} Score={2} Turn={3} ###", PlayerWithTheDice.Value.Name, DiceToRoll, PlayerWithTheDice.Value.BankedScore, TurnScore);
+                foreach (FarklePlayer p in Players)
+                {
+                    Console.WriteLine("{0}{1}{2}", 
+                        p.Name.PadLeft(15), 
+                        p.BankedScore.ToString().PadLeft(7), 
+                        (PlayerWithTheDice.Value.Equals(p) ? TurnScore.ToString() + " [" + DiceToRoll + "d]" : "").PadLeft(12));    
+                }
                 if (Roll != null) Console.WriteLine(Roll);
 
 
