@@ -170,7 +170,7 @@ namespace Farkler
                                 if (TurnScore + points < 300) { WriteLine("ERR - cannot bank less than 300 points."); break; }
                                 TurnScore += points;
                                 PlayerWithTheDice.Value.BankedScore += TurnScore;
-                                WriteLine("Banked {0}, Score for {1} is now {2}", TurnScore, PlayerWithTheDice.Value.Name, PlayerWithTheDice.Value.BankedScore);
+                                WriteLine("{0} BANKS {1}", CurrentPlayerInfo(), TurnScore);
                                 EndTurn();
                             }
                             else
@@ -181,7 +181,7 @@ namespace Farkler
 
                                 TurnScore += points;
                                 DiceToRoll = dice;
-                                WriteLine("Stashed {0} and rolling {1} dice.", points, dice);
+                                WriteLine("{0} STASHES {1} and ROLLS {2}", CurrentPlayerInfo(), points, dice);
                                 RandomRoll();
                                 WriteLine(Roll);
                             }
@@ -213,7 +213,8 @@ namespace Farkler
                             turnIsOver = false;
                             if (!ActionsPossible.Any())
                             {
-                                WriteLine("{0} GOT FARKLED!", PlayerWithTheDice.Value.Name);
+                                TurnScore = 0;
+                                WriteLine("{0} BUSTED!", CurrentPlayerInfo());
                                 turnIsOver = true;
                             }
 
@@ -222,16 +223,6 @@ namespace Farkler
 
                     if (turnIsOver) EndTurn();
                 }
-
-                WriteLine();
-                foreach (FarklePlayer p in Players)
-                {
-                    WriteLine("{0}{1}{2}", 
-                        p.Name.PadLeft(15).PadRight(16),
-                        p.BankedScore.ToString().PadLeft(5).PadRight(7), 
-                        (PlayerWithTheDice.Value.Equals(p) ? TurnScore.ToString() + " [" + DiceToRoll + "d]" : ""));    
-                }
-                if (Roll != null) WriteLine(Roll);
 
                 FarklePlayer winner = Players.FirstOrDefault(x => x.BankedScore >= ExpectedValueCalc.WinScore);
                 if (winner != null)
@@ -259,6 +250,18 @@ namespace Farkler
             ActionsPossible.Clear();
             PlayerWithTheDice.Value.TurnsTaken++;
             PlayerWithTheDice = PlayerWithTheDice.Next ?? Players.First;
+
+            WriteLine();
+            WriteLine("===============================================================================");
+            foreach (FarklePlayer p in Players)
+            {
+                WriteLine("{0}{1}{2}",
+                    p.Name.PadLeft(15).PadRight(16),
+                    p.BankedScore.ToString().PadLeft(5).PadRight(7),
+                    (PlayerWithTheDice.Value.Equals(p) ? " [" + TurnScore.ToString() + " " + DiceToRoll + "d]" : ""));
+            }
+            WriteLine("...............................................................................");
+            if (Roll != null) WriteLine(Roll);
         }
 
         static void Reset()
@@ -284,13 +287,18 @@ namespace Farkler
             PlayerWithTheDice = Players.First;
         }
 
+        static string CurrentPlayerInfo()
+        {
+            return string.Format("{0} [ {1} ] [{2} {3}d]", PlayerWithTheDice.Value.Name, PlayerWithTheDice.Value.BankedScore, TurnScore, DiceToRoll);
+        }
+
         static bool ChooseAndPerformAction()
         {
             bool tryingToOpen = PlayerWithTheDice.Value.BankedScore == 0;
             if (!ActionsPossible.Any())
             {
-                WriteLine("%%%% I GOT FARKLED!");
                 TurnScore = 0;
+                WriteLine("{0} BUSTED!", CurrentPlayerInfo());
                 return true;
             }
 
@@ -319,14 +327,14 @@ namespace Farkler
             TurnScore += pick.ScoreToAdd;
             if ((tryingToOpen && TurnScore >= ExpectedValueCalc.MinOpen) || (!tryingToOpen && best == TurnScore))
             {
-                WriteLine("%%%%% I CHOOSE TO BANK {0}", TurnScore);
                 PlayerWithTheDice.Value.BankedScore += TurnScore;
+                WriteLine("{0} BANKS {1}", CurrentPlayerInfo(), TurnScore);
                 return true;
             }
             else
             {
-                WriteLine("%%%%% I CHOOSE TO STASH {0} AND ROLL {1} DICE", pick.ScoreToAdd, pick.DiceToRoll);
                 DiceToRoll = pick.DiceToRoll;
+                WriteLine("{0} STASHES {1} and ROLLS {2}", CurrentPlayerInfo(), pick.ScoreToAdd, pick.DiceToRoll);
                 return false;
             }
         }
