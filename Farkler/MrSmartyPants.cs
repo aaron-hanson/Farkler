@@ -90,7 +90,7 @@ namespace Farkler
             {
                 if (Mode == AIMode.Manual || State == GameState.NoGame || PlayerWithTheDice.Value.Type == PlayerType.Human)
                 {
-                    Write("<farkler> $ ");
+                    Write("<farkler{0}> $ ", PlayerWithTheDice == null ? "" : " : " + PlayerWithTheDice.Value.Name);
                     var cmdtext = Console.ReadLine().Replace("  ", " ").Trim().Split(' ');
                     cmd = cmdtext[0];
                     cmdData = cmdtext.Length > 1 ? cmdtext[1] : null;
@@ -251,6 +251,11 @@ namespace Farkler
             PlayerWithTheDice.Value.TurnsTaken++;
             PlayerWithTheDice = PlayerWithTheDice.Next ?? Players.First;
 
+            ShowStatus();
+        }
+
+        static void ShowStatus()
+        {
             WriteLine();
             WriteLine("===============================================================================");
             foreach (FarklePlayer p in Players)
@@ -285,6 +290,8 @@ namespace Farkler
             ActionsPossible.Clear();
             Players.ToList().ForEach(x => { x.BankedScore = 0; x.TurnsTaken = 0; });
             PlayerWithTheDice = Players.First;
+
+            ShowStatus();
         }
 
         static string CurrentPlayerInfo()
