@@ -296,11 +296,19 @@ namespace Farkler
 
             double best = 0;
             FarkleAction pick = null;
-            foreach (var act in ActionsPossible)
+            foreach (var act in ActionsPossible.OrderByDescending(x => x.ScoreToAdd))
             {
+                var potentialNewScore = TurnScore + act.ScoreToAdd;
+                if (potentialNewScore >= ExpectedValueCalc.MinBank && PlayerWithTheDice.Value.BankedScore + potentialNewScore >= ExpectedValueCalc.WinScore)
+                {
+                    pick = act;
+                    best = potentialNewScore;
+                    break;
+                }
+
                 double ev = tryingToOpen ?
-                    ExpectedValueCalc.EVOpening(act.DiceToRoll, TurnScore + act.ScoreToAdd)
-                    : ExpectedValueCalc.EV(act.DiceToRoll, TurnScore + act.ScoreToAdd);
+                    ExpectedValueCalc.EVOpening(act.DiceToRoll, potentialNewScore)
+                    : ExpectedValueCalc.EV(act.DiceToRoll, potentialNewScore);
                 if (ev >= best)
                 {
                     best = ev;
@@ -323,14 +331,16 @@ namespace Farkler
             }
         }
 
-        static void GenerateTurnHistogram()
+        public static void GenerateTurnHistogram()
         {
             int count = 0;
             Quiet = true;
-            SortedDictionary<int, double> Histogram = new SortedDictionary<int, double>();
             bool turnIsOver = false;
             Reset();
             NewGame();
+
+            SortedDictionary<int, double> Histogram = new SortedDictionary<int, double>();
+
             while (count < 100000)
             {
                 RandomRoll();
@@ -353,11 +363,9 @@ namespace Farkler
             File.WriteAllText("TurnHistogram.json", serialized);
         }
 
-        static double ExpectedTurnsLeft()
+        public static double ExpectedTurnsLeft(double score)
         {
-            double tLeft = 0;
-
-            return tLeft;
+            return (ExpectedValueCalc.WinScore - score) / 469.88274854547706;
         }
 
         public static void Write(object s)

@@ -14,8 +14,8 @@ namespace Farkler
         public static int WinScore { get; set; }
         public static int MinBank { get; set; }
         public static int MinOpen { get; set; }
-        public static Dictionary<string, double> EVCache;
-        public static Dictionary<string, double> EVOpeningCache;
+        public static SortedDictionary<string, double> EVCache;
+        public static SortedDictionary<string, double> EVOpeningCache;
 
         static ExpectedValueCalc()
         {
@@ -23,12 +23,12 @@ namespace Farkler
             MinBank = 300;
             MinOpen = 500;
 
-            Dictionary<string, double> evcache =
-                JsonConvert.DeserializeObject<Dictionary<string, double>>(File.ReadAllText("EVCache.json"));
+            SortedDictionary<string, double> evcache =
+                JsonConvert.DeserializeObject<SortedDictionary<string, double>>(File.ReadAllText("EVCache.json"));
             ExpectedValueCalc.EVCache = evcache;
 
-            Dictionary<string, double> evopeningcache =
-                JsonConvert.DeserializeObject<Dictionary<string, double>>(File.ReadAllText("EVOpeningCache.json"));
+            SortedDictionary<string, double> evopeningcache =
+                JsonConvert.DeserializeObject<SortedDictionary<string, double>>(File.ReadAllText("EVOpeningCache.json"));
             ExpectedValueCalc.EVOpeningCache = evopeningcache;
         }
 
@@ -76,6 +76,27 @@ namespace Farkler
             return ev;
         }
 
+        public static double ChanceToWin(int d, double p)
+        {
+            double ev;
+            string key = d + ":" + p;
+            if (EVCache.TryGetValue(key, out ev)) return ev;
+
+            if (p >= WinScore && p >= MinBank)
+            {
+                EVCache.Add(key, 1);
+                return 1;
+            }
+
+            ev = Dice.Permute[d]
+                .Average(x => Farkle.GenerateActions(x)
+                    .Max(y => (double?)ChanceToWin(y.DiceToRoll, p + y.ScoreToAdd)) ?? 0D);
+
+            EVCache.Add(key, ev);
+            Console.Write('.');
+            return ev;
+        }
+
         public static void RewriteEVCache()
         {
             EVCache.Clear();
@@ -87,10 +108,7 @@ namespace Farkler
             Console.WriteLine("Score Cache: " + Farkle.ValidScoreCache.Count);
             Console.WriteLine("Combo Cache: " + Dice.RollComboCache.Count);
 
-            string serialized = JsonConvert.SerializeObject(
-                ExpectedValueCalc.EVCache
-                .OrderBy(x => x.Key)
-                .ToDictionary(k => k.Key, v => v.Value));
+            string serialized = JsonConvert.SerializeObject(ExpectedValueCalc.EVCache);
             File.WriteAllText("EVCache.json", serialized);
         }
 
@@ -105,10 +123,7 @@ namespace Farkler
             Console.WriteLine("Score Cache: " + Farkle.ValidScoreCache.Count);
             Console.WriteLine("Combo Cache: " + Dice.RollComboCache.Count);
 
-            string serialized = JsonConvert.SerializeObject(
-                ExpectedValueCalc.EVOpeningCache
-                .OrderBy(x => x.Key)
-                .ToDictionary(k => k.Key, v => v.Value));
+            string serialized = JsonConvert.SerializeObject(ExpectedValueCalc.EVOpeningCache);
             File.WriteAllText("EVOpeningCache.json", serialized);
         }
 

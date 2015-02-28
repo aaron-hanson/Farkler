@@ -21,6 +21,7 @@ namespace Farkler
 
         public void go()
         {
+            //MrSmartyPants.GenerateTurnHistogram();
             MrSmartyPants.Interactive();
         }
 
