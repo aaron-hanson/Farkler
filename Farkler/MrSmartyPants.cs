@@ -71,7 +71,7 @@ namespace Farkler
         static int TurnScore;
         static int DiceToRoll;
         static Roll Roll;
-        static List<Action> ActionsPossible;
+        static List<FarkleAction> ActionsPossible;
         static LinkedListNode<FarklePlayer> PlayerWithTheDice;
 
         static void Reset()
@@ -81,7 +81,7 @@ namespace Farkler
             TurnScore = 0;
             DiceToRoll = 6;
             Roll = null;
-            ActionsPossible = new List<Action>();
+            ActionsPossible = new List<FarkleAction>();
             Players = new LinkedList<FarklePlayer>();
             Players.AddLast(new FarklePlayer("MrSmartyPants", PlayerType.AI));
         }
@@ -103,8 +103,7 @@ namespace Farkler
                 }
                 else
                 {
-                    Roll = Dice.RandomRoll(DiceToRoll);
-                    ActionsPossible = Farkle.Gen(Roll);
+                    RandomRoll();
                     Console.WriteLine(Roll);
                     cmd = string.Empty;
                 }
@@ -263,7 +262,7 @@ namespace Farkler
             }
 
             double best = TurnScore;
-            Action pick = null;
+            FarkleAction pick = null;
             foreach (var act in ActionsPossible)
             {
                 double ev = ExpectedValueCalc.EV(act.DiceToRoll, TurnScore + act.ScoreToAdd);
@@ -288,64 +287,6 @@ namespace Farkler
                 return false;
             }
         }
-
-        //public static void Play()
-        //{
-        //    int score = 0;
-        //    int dice = 6;
-        //    while(true)
-        //    {
-        //        Console.Write("\nScore = {0}\nRoll : ", score);
-                
-        //        //string rstr = Console.ReadLine();
-        //        //Console.WriteLine();
-        //        //Roll roll = new Roll(rstr);
-
-        //        Roll roll = Dice.RandomRoll(dice);
-        //        Console.WriteLine(roll);
-                
-        //        List<Action> actions = Farkle.Gen(roll);
-
-        //        if (actions.Count == 0)
-        //        {
-        //            Console.WriteLine("FARKLE!");
-        //            score = 0;
-        //            dice = 6;
-        //            Console.ReadLine();
-        //            continue;
-        //        }
-
-        //        double best = score;
-        //        Action pick = null;
-        //        foreach (var act in actions)
-        //        {
-        //            Console.Write("(" + act + ")");
-        //            double ev = ExpectedValueCalc.EV(act.DiceToRoll, score + act.ScoreToAdd);
-        //            if (ev > best)
-        //            {
-        //                best = ev;
-        //                pick = act;
-        //            }
-        //            Console.WriteLine(ev);
-        //        }
-
-        //        score += pick.ScoreToAdd;
-        //        if (best == score)
-        //        {
-        //            Console.WriteLine(">>> STOP {0} BANK {1}", pick.ScoreToAdd, score);
-        //            score = 0;
-        //            dice = 6;
-        //        }
-        //        else
-        //        {
-        //            dice = pick.DiceToRoll;
-        //            Console.WriteLine(">>> {0}", pick);
-        //        }
-                
-        //        Console.ReadLine();
-        //    }
-        //}
-
 
     }
 }
