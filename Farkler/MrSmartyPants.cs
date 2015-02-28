@@ -18,6 +18,7 @@ namespace Farkler
         public const string ModeAutomatic = "ma";
         public const string ModeManual = "mm";
         public const string AddPlayer = "p";
+        public const string AddPlayerAI = "pa";
         public const string Action = "a";
     }
 
@@ -112,6 +113,16 @@ namespace Farkler
                         {
                             Players.AddLast(new FarklePlayer(cmdData));
                             Console.WriteLine("Added new player {0}, now there are {1} players.", cmdData, Players.Count);
+                        }
+                        break;
+                    case UserCommand.AddPlayerAI:
+                        if (State == GameState.InGame) Console.WriteLine("ERR - cannot add a player while a game is in progress.");
+                        else if (cmdData == null) Console.WriteLine("ERR - (p) Usage:  p-PlayerName");
+                        else if (Players.Any(x => x.Name.Equals(cmdData))) Console.WriteLine("ERR - player with that name already exists.");
+                        else
+                        {
+                            Players.AddLast(new FarklePlayer(cmdData, PlayerType.AI));
+                            Console.WriteLine("Added new AI player {0}, now there are {1} players.", cmdData, Players.Count);
                         }
                         break;
                     case UserCommand.ModeAutomatic:
@@ -213,7 +224,7 @@ namespace Farkler
                 {
                     Console.WriteLine("{0}{1}{2}", 
                         p.Name.PadLeft(15).PadRight(16),
-                        p.BankedScore.ToString().PadRight(7), 
+                        p.BankedScore.ToString().PadLeft(5).PadRight(7), 
                         (PlayerWithTheDice.Value.Equals(p) ? TurnScore.ToString() + " [" + DiceToRoll + "d]" : ""));    
                 }
                 if (Roll != null) Console.WriteLine(Roll);
