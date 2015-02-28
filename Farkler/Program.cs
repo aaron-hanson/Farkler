@@ -26,8 +26,12 @@ namespace Farkler
             Dictionary<string, double> evcache =
                 JsonConvert.DeserializeObject<Dictionary<string, double>>(File.ReadAllText("EVCache.json"));
             ExpectedValueCalc.EVCache = evcache;
+            
+            Dictionary<string, double> evopeningcache =
+                JsonConvert.DeserializeObject<Dictionary<string, double>>(File.ReadAllText("EVOpeningCache.json"));
+            ExpectedValueCalc.EVOpeningCache = evopeningcache;
 
-            MrSmartyPants.Interactive();
+            //MrSmartyPants.Interactive();
 
             //var ev = ExpectedValueCalc.EV(6, 0);
             //Console.WriteLine();
