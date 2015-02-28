@@ -257,18 +257,21 @@ namespace Farkler
 
         static bool ChooseAndPerformAction()
         {
+            bool tryingToOpen = PlayerWithTheDice.Value.BankedScore == 0;
             if (!ActionsPossible.Any())
             {
                 Console.WriteLine("%%%% I GOT FARKLED!");
                 return true;
             }
 
-            double best = TurnScore;
+            double best = 0;
             FarkleAction pick = null;
             foreach (var act in ActionsPossible)
             {
-                double ev = ExpectedValueCalc.EV(act.DiceToRoll, TurnScore + act.ScoreToAdd);
-                if (ev > best)
+                double ev = tryingToOpen ?
+                    ExpectedValueCalc.EVOpening(act.DiceToRoll, TurnScore + act.ScoreToAdd)
+                    : ExpectedValueCalc.EV(act.DiceToRoll, TurnScore + act.ScoreToAdd);
+                if (ev >= best)
                 {
                     best = ev;
                     pick = act;
@@ -276,7 +279,7 @@ namespace Farkler
             }
 
             TurnScore += pick.ScoreToAdd;
-            if (best == TurnScore)
+            if ((tryingToOpen && TurnScore >= ExpectedValueCalc.MinOpen) || (!tryingToOpen && best == TurnScore))
             {
                 Console.WriteLine("%%%%% I CHOOSE TO BANK {0}", TurnScore);
                 PlayerWithTheDice.Value.BankedScore += TurnScore;

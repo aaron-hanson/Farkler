@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,17 +22,27 @@ namespace Farkler
             WinScore = 10000;
             MinBank = 300;
             MinOpen = 500;
-            EVCache = new Dictionary<string, double>();
-            EVOpeningCache = new Dictionary<string, double>();
+
+            Dictionary<string, double> evcache =
+                JsonConvert.DeserializeObject<Dictionary<string, double>>(File.ReadAllText("EVCache.json"));
+            ExpectedValueCalc.EVCache = evcache;
+
+            Dictionary<string, double> evopeningcache =
+                JsonConvert.DeserializeObject<Dictionary<string, double>>(File.ReadAllText("EVOpeningCache.json"));
+            ExpectedValueCalc.EVOpeningCache = evopeningcache;
         }
 
         public static double EV(int d, double p)
         {
-            if (p >= WinScore) return p;
-
             double ev;
             string key = d + ":" + p;
             if (EVCache.TryGetValue(key, out ev)) return ev;
+
+            if (p >= WinScore)
+            {
+                EVCache.Add(key, p);
+                return p;
+            }
 
             ev = Dice.Permute[d]
                 .Average(x => Farkle.GenerateActions(x)
@@ -44,23 +56,60 @@ namespace Farkler
 
         public static double EVOpening(int d, double p)
         {
-            if (p >= WinScore) return p;
-
             double ev;
             string key = d + ":" + p;
             if (EVOpeningCache.TryGetValue(key, out ev)) return ev;
 
+            if (p >= MinOpen || p >= WinScore)
+            {
+                EVOpeningCache.Add(key, p);
+                return p;
+            }
+
             ev = Dice.Permute[d]
                 .Average(x => Farkle.GenerateActions(x)
-                    .Max(y => (double?)(
-                        (p + y.ScoreToAdd) >= MinOpen
-                            ? p + y.ScoreToAdd
-                            : EVOpening(y.DiceToRoll, p + y.ScoreToAdd))) ?? 0D);
+                    .Max(y => (double?)EVOpening(y.DiceToRoll, p + y.ScoreToAdd)) ?? 0D);
 
             ev = (p < MinBank || p < MinOpen) ? ev : Math.Max(ev, p);
             EVOpeningCache.Add(key, ev);
             Console.Write('.');
             return ev;
+        }
+
+        public static void RewriteEVCache()
+        {
+            EVCache.Clear();
+            var ev = EV(6, 0);
+            Console.WriteLine();
+            Console.WriteLine(ev);
+            Console.WriteLine("EV Cache: " + EVCache.Count);
+            Console.WriteLine("Action Cache: " + Farkle.GenCache.Count);
+            Console.WriteLine("Score Cache: " + Farkle.ValidScoreCache.Count);
+            Console.WriteLine("Combo Cache: " + Dice.RollComboCache.Count);
+
+            string serialized = JsonConvert.SerializeObject(
+                ExpectedValueCalc.EVCache
+                .OrderBy(x => x.Key)
+                .ToDictionary(k => k.Key, v => v.Value));
+            File.WriteAllText("EVCache.json", serialized);
+        }
+
+        public static void RewriteEVOpeningCache()
+        {
+            EVOpeningCache.Clear();
+            var ev = EVOpening(6, 0);
+            Console.WriteLine();
+            Console.WriteLine(ev);
+            Console.WriteLine("EV Opening Cache: " + EVOpeningCache.Count);
+            Console.WriteLine("Action Cache: " + Farkle.GenCache.Count);
+            Console.WriteLine("Score Cache: " + Farkle.ValidScoreCache.Count);
+            Console.WriteLine("Combo Cache: " + Dice.RollComboCache.Count);
+
+            string serialized = JsonConvert.SerializeObject(
+                ExpectedValueCalc.EVOpeningCache
+                .OrderBy(x => x.Key)
+                .ToDictionary(k => k.Key, v => v.Value));
+            File.WriteAllText("EVOpeningCache.json", serialized);
         }
 
     }
