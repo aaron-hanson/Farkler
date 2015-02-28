@@ -44,6 +44,7 @@ namespace Farkler
         public PlayerType Type;
         public string Name;
         public int BankedScore;
+        public int TurnsTaken;
 
         public FarklePlayer(string name, PlayerType type = PlayerType.Human)
         {
@@ -75,18 +76,6 @@ namespace Farkler
         static List<FarkleAction> ActionsPossible;
         static LinkedListNode<FarklePlayer> PlayerWithTheDice;
 
-        static void Reset()
-        {
-            State = GameState.NoGame;
-            Mode = AIMode.Manual;
-            TurnScore = 0;
-            DiceToRoll = 6;
-            Roll = null;
-            ActionsPossible = new List<FarkleAction>();
-            Players = new LinkedList<FarklePlayer>();
-            Players.AddLast(new FarklePlayer("MrSmartyPants", PlayerType.AI));
-        }
-
         public static void Interactive()
         {
             Reset();
@@ -107,7 +96,7 @@ namespace Farkler
                     RandomRoll();
                     Console.WriteLine(Roll);
                     cmd = string.Empty;
-                    Thread.Sleep(2000);
+                    //Thread.Sleep(2000);
                 }
 
                 switch (cmd)
@@ -184,13 +173,7 @@ namespace Farkler
                         }
                         break;
                     case UserCommand.NewGame:
-                        State = GameState.InGame;
-                        TurnScore = 0;
-                        DiceToRoll = 6;
-                        Roll = null;
-                        ActionsPossible.Clear();
-                        Players.ToList().ForEach(x => x.BankedScore = 0);
-                        PlayerWithTheDice = Players.First;
+                        NewGame();
                         break;
                     case UserCommand.Quit:
                         State = GameState.NoGame;
@@ -235,7 +218,14 @@ namespace Farkler
                 }
                 if (Roll != null) Console.WriteLine(Roll);
 
-
+                FarklePlayer winner = Players.FirstOrDefault(x => x.BankedScore >= ExpectedValueCalc.WinScore);
+                if (winner != null)
+                {
+                    Console.WriteLine("\n\n---------- {0} WINS! ----------", winner.Name);
+                    Console.WriteLine("{0} Turns for an average of {1} points per turn.", winner.TurnsTaken, (double)winner.BankedScore / winner.TurnsTaken);
+                    NewGame();
+                    State = GameState.NoGame;
+                }
 
             } //while
         }
@@ -252,7 +242,31 @@ namespace Farkler
             TurnScore = 0;
             Roll = null;
             ActionsPossible.Clear();
+            PlayerWithTheDice.Value.TurnsTaken++;
             PlayerWithTheDice = PlayerWithTheDice.Next ?? Players.First;
+        }
+
+        static void Reset()
+        {
+            State = GameState.NoGame;
+            Mode = AIMode.Manual;
+            TurnScore = 0;
+            DiceToRoll = 6;
+            Roll = null;
+            ActionsPossible = new List<FarkleAction>();
+            Players = new LinkedList<FarklePlayer>();
+            Players.AddLast(new FarklePlayer("MrSmartyPants", PlayerType.AI));
+        }
+
+        static void NewGame()
+        {
+            State = GameState.InGame;
+            TurnScore = 0;
+            DiceToRoll = 6;
+            Roll = null;
+            ActionsPossible.Clear();
+            Players.ToList().ForEach(x => { x.BankedScore = 0; x.TurnsTaken = 0; });
+            PlayerWithTheDice = Players.First;
         }
 
         static bool ChooseAndPerformAction()
