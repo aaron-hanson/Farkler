@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -66,6 +68,8 @@ namespace Farkler
     
     class MrSmartyPants
     {
+        public static bool Quiet = false;
+
         static GameState State;
         static AIMode Mode;
 
@@ -86,7 +90,7 @@ namespace Farkler
             {
                 if (Mode == AIMode.Manual || State == GameState.NoGame || PlayerWithTheDice.Value.Type == PlayerType.Human)
                 {
-                    Console.Write("<farkler> $ ");
+                    Write("<farkler> $ ");
                     var cmdtext = Console.ReadLine().Replace("  ", " ").Trim().Split(' ');
                     cmd = cmdtext[0];
                     cmdData = cmdtext.Length > 1 ? cmdtext[1] : null;
@@ -95,7 +99,7 @@ namespace Farkler
                 else
                 {
                     RandomRoll();
-                    Console.WriteLine(Roll);
+                    WriteLine(Roll);
                     cmd = string.Empty;
                     //Thread.Sleep(2000);
                 }
@@ -106,80 +110,80 @@ namespace Farkler
                         Reset();
                         break;
                     case UserCommand.AddPlayer:
-                        if (State == GameState.InGame) Console.WriteLine("ERR - cannot add a player while a game is in progress.");
-                        else if (cmdData == null) Console.WriteLine("ERR - (p) Usage:  p-PlayerName");
-                        else if (Players.Any(x => x.Name.Equals(cmdData))) Console.WriteLine("ERR - player with that name already exists.");
+                        if (State == GameState.InGame) WriteLine("ERR - cannot add a player while a game is in progress.");
+                        else if (cmdData == null) WriteLine("ERR - (p) Usage:  p-PlayerName");
+                        else if (Players.Any(x => x.Name.Equals(cmdData))) WriteLine("ERR - player with that name already exists.");
                         else
                         {
                             Players.AddLast(new FarklePlayer(cmdData));
-                            Console.WriteLine("Added new player {0}, now there are {1} players.", cmdData, Players.Count);
+                            WriteLine("Added new player {0}, now there are {1} players.", cmdData, Players.Count);
                         }
                         break;
                     case UserCommand.AddPlayerAI:
-                        if (State == GameState.InGame) Console.WriteLine("ERR - cannot add a player while a game is in progress.");
-                        else if (cmdData == null) Console.WriteLine("ERR - (p) Usage:  p-PlayerName");
-                        else if (Players.Any(x => x.Name.Equals(cmdData))) Console.WriteLine("ERR - player with that name already exists.");
+                        if (State == GameState.InGame) WriteLine("ERR - cannot add a player while a game is in progress.");
+                        else if (cmdData == null) WriteLine("ERR - (p) Usage:  p-PlayerName");
+                        else if (Players.Any(x => x.Name.Equals(cmdData))) WriteLine("ERR - player with that name already exists.");
                         else
                         {
                             Players.AddLast(new FarklePlayer(cmdData, PlayerType.AI));
-                            Console.WriteLine("Added new AI player {0}, now there are {1} players.", cmdData, Players.Count);
+                            WriteLine("Added new AI player {0}, now there are {1} players.", cmdData, Players.Count);
                         }
                         break;
                     case UserCommand.ModeAutomatic:
                         Mode = AIMode.Automatic;
-                        Console.WriteLine("Mode set to Automatic");
+                        WriteLine("Mode set to Automatic");
                         break;
                     case UserCommand.ModeManual:
                         Mode = AIMode.Manual;
-                        Console.WriteLine("Mode set to Manual");
+                        WriteLine("Mode set to Manual");
                         break;
                     case UserCommand.RandomRoll:
-                        if (Roll != null) Console.WriteLine("ERR - cannot Roll until current roll is acted upon.");
+                        if (Roll != null) WriteLine("ERR - cannot Roll until current roll is acted upon.");
                         else
                         {
                             RandomRoll();
-                            Console.WriteLine(Roll);
+                            WriteLine(Roll);
                         }
                         break;
                     case UserCommand.Roll:
-                        if (Roll != null) Console.WriteLine("ERR - cannot Roll until current roll is acted upon.");
-                        else if (cmdData == null || !Regex.IsMatch(cmdData, @"^\d{" + DiceToRoll + "}$")) Console.WriteLine("ERR - (r) Usage:  r-122245");
+                        if (Roll != null) WriteLine("ERR - cannot Roll until current roll is acted upon.");
+                        else if (cmdData == null || !Regex.IsMatch(cmdData, @"^\d{" + DiceToRoll + "}$")) WriteLine("ERR - (r) Usage:  r-122245");
                         else
                         {
                             Roll = new Roll(cmdData);
                             ActionsPossible = Farkle.GenerateActions(Roll);
-                            Console.WriteLine(Roll);
+                            WriteLine(Roll);
                         }
                         break;
                     case UserCommand.Action:
-                        if (PlayerWithTheDice.Value.Type != PlayerType.Human) Console.WriteLine("ERR - cannot perform Action, player is not human.");
-                        else if (Roll == null) Console.WriteLine("ERR - cannot perform Action, there is no roll on the table.");
-                        else if (cmdData == null) Console.WriteLine("ERR - (a) Usage:  a-400-3 (a-points-dicetoroll)");
+                        if (PlayerWithTheDice.Value.Type != PlayerType.Human) WriteLine("ERR - cannot perform Action, player is not human.");
+                        else if (Roll == null) WriteLine("ERR - cannot perform Action, there is no roll on the table.");
+                        else if (cmdData == null) WriteLine("ERR - (a) Usage:  a-400-3 (a-points-dicetoroll)");
                         else
                         {
                             int points;
-                            if (!int.TryParse(cmdData, out points)) { Console.WriteLine("ERR - (a) Usage:  a-400-3 (a-points-dicetoroll)"); break; }
-                            if (!ActionsPossible.Any(x => x.ScoreToAdd == points)) { Console.WriteLine("ERR - no matching possible action."); break; }
+                            if (!int.TryParse(cmdData, out points)) { WriteLine("ERR - (a) Usage:  a-400-3 (a-points-dicetoroll)"); break; }
+                            if (!ActionsPossible.Any(x => x.ScoreToAdd == points)) { WriteLine("ERR - no matching possible action."); break; }
 
                             if (cmdData2 == null)
                             {
-                                if (TurnScore + points < 300) { Console.WriteLine("ERR - cannot bank less than 300 points."); break; }
+                                if (TurnScore + points < 300) { WriteLine("ERR - cannot bank less than 300 points."); break; }
                                 TurnScore += points;
                                 PlayerWithTheDice.Value.BankedScore += TurnScore;
-                                Console.WriteLine("Banked {0}, Score for {1} is now {2}", TurnScore, PlayerWithTheDice.Value.Name, PlayerWithTheDice.Value.BankedScore);
+                                WriteLine("Banked {0}, Score for {1} is now {2}", TurnScore, PlayerWithTheDice.Value.Name, PlayerWithTheDice.Value.BankedScore);
                                 EndTurn();
                             }
                             else
                             {
                                 int dice;
-                                if (!int.TryParse(cmdData2, out dice)) { Console.WriteLine("ERR - (a) Usage:  a-400-3 (a-points-dicetoroll)"); break; }
-                                if (!ActionsPossible.Any(x => x.ScoreToAdd == points && x.DiceToRoll == dice)) { Console.WriteLine("ERR - no matching possible action."); break; }
+                                if (!int.TryParse(cmdData2, out dice)) { WriteLine("ERR - (a) Usage:  a-400-3 (a-points-dicetoroll)"); break; }
+                                if (!ActionsPossible.Any(x => x.ScoreToAdd == points && x.DiceToRoll == dice)) { WriteLine("ERR - no matching possible action."); break; }
 
                                 TurnScore += points;
                                 DiceToRoll = dice;
-                                Console.WriteLine("Stashed {0} and rolling {1} dice.", points, dice);
+                                WriteLine("Stashed {0} and rolling {1} dice.", points, dice);
                                 RandomRoll();
-                                Console.WriteLine(Roll);
+                                WriteLine(Roll);
                             }
                         }
                         break;
@@ -209,7 +213,7 @@ namespace Farkler
                             turnIsOver = false;
                             if (!ActionsPossible.Any())
                             {
-                                Console.WriteLine("{0} GOT FARKLED!", PlayerWithTheDice.Value.Name);
+                                WriteLine("{0} GOT FARKLED!", PlayerWithTheDice.Value.Name);
                                 turnIsOver = true;
                             }
 
@@ -219,21 +223,21 @@ namespace Farkler
                     if (turnIsOver) EndTurn();
                 }
 
-                Console.WriteLine();
+                WriteLine();
                 foreach (FarklePlayer p in Players)
                 {
-                    Console.WriteLine("{0}{1}{2}", 
+                    WriteLine("{0}{1}{2}", 
                         p.Name.PadLeft(15).PadRight(16),
                         p.BankedScore.ToString().PadLeft(5).PadRight(7), 
                         (PlayerWithTheDice.Value.Equals(p) ? TurnScore.ToString() + " [" + DiceToRoll + "d]" : ""));    
                 }
-                if (Roll != null) Console.WriteLine(Roll);
+                if (Roll != null) WriteLine(Roll);
 
                 FarklePlayer winner = Players.FirstOrDefault(x => x.BankedScore >= ExpectedValueCalc.WinScore);
                 if (winner != null)
                 {
-                    Console.WriteLine("\n\n---------- {0} WINS! ----------", winner.Name);
-                    Console.WriteLine("{0} Turns for an average of {1} points per turn.", winner.TurnsTaken, (double)winner.BankedScore / winner.TurnsTaken);
+                    WriteLine("\n\n---------- {0} WINS! ----------", winner.Name);
+                    WriteLine("{0} Turns for an average of {1} points per turn.", winner.TurnsTaken, (double)winner.BankedScore / winner.TurnsTaken);
                     NewGame();
                     State = GameState.NoGame;
                 }
@@ -285,7 +289,8 @@ namespace Farkler
             bool tryingToOpen = PlayerWithTheDice.Value.BankedScore == 0;
             if (!ActionsPossible.Any())
             {
-                Console.WriteLine("%%%% I GOT FARKLED!");
+                WriteLine("%%%% I GOT FARKLED!");
+                TurnScore = 0;
                 return true;
             }
 
@@ -306,16 +311,78 @@ namespace Farkler
             TurnScore += pick.ScoreToAdd;
             if ((tryingToOpen && TurnScore >= ExpectedValueCalc.MinOpen) || (!tryingToOpen && best == TurnScore))
             {
-                Console.WriteLine("%%%%% I CHOOSE TO BANK {0}", TurnScore);
+                WriteLine("%%%%% I CHOOSE TO BANK {0}", TurnScore);
                 PlayerWithTheDice.Value.BankedScore += TurnScore;
                 return true;
             }
             else
             {
-                Console.WriteLine("%%%%% I CHOOSE TO STASH {0} AND ROLL {1} DICE", pick.ScoreToAdd, pick.DiceToRoll);
+                WriteLine("%%%%% I CHOOSE TO STASH {0} AND ROLL {1} DICE", pick.ScoreToAdd, pick.DiceToRoll);
                 DiceToRoll = pick.DiceToRoll;
                 return false;
             }
+        }
+
+        static void GenerateTurnHistogram()
+        {
+            int count = 0;
+            Quiet = true;
+            SortedDictionary<int, double> Histogram = new SortedDictionary<int, double>();
+            bool turnIsOver = false;
+            Reset();
+            NewGame();
+            while (count < 100000)
+            {
+                RandomRoll();
+                turnIsOver = ChooseAndPerformAction();
+                Roll = null;
+                ActionsPossible.Clear();
+                if (turnIsOver)
+                {
+                    if (Histogram.ContainsKey(TurnScore)) Histogram[TurnScore]++;
+                    else Histogram[TurnScore] = 1;
+                    EndTurn();
+                    count++;
+                    if (count % 10000 == 0) Console.WriteLine(count);
+                }
+            }
+
+            Histogram.Keys.ToList().ForEach(x => Histogram[x] /= count);
+
+            string serialized = JsonConvert.SerializeObject(Histogram);
+            File.WriteAllText("TurnHistogram.json", serialized);
+        }
+
+        static double ExpectedTurnsLeft()
+        {
+            double tLeft = 0;
+
+            return tLeft;
+        }
+
+        public static void Write(object s)
+        {
+            if (!Quiet) Console.Write(s);
+        }
+
+        public static void Write(string s, params object[] stuff)
+        {
+            if (!Quiet) Console.Write(s, stuff);
+        }
+
+        public static void WriteLine()
+        {
+            if (!Quiet) Console.WriteLine();
+        }
+
+        public static void WriteLine(object s)
+        {
+            if (!Quiet) Console.WriteLine(s);
+        }
+
+        public static void WriteLine(string s, params object[] stuff)
+        {
+            if (!Quiet) Console.WriteLine(s, stuff);
         }
 
     }
