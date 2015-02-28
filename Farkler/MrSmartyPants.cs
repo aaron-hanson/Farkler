@@ -9,6 +9,7 @@ namespace Farkler
 {
     sealed class UserCommand
     {
+        public const string Reset = "$";
         public const string NewGame = "n";
         public const string Roll = "r";
         public const string RandomRoll = "rr";
@@ -62,21 +63,32 @@ namespace Farkler
     
     class MrSmartyPants
     {
-        static GameState State = GameState.NoGame;
-        static AIMode Mode = AIMode.Manual;
+        static GameState State;
+        static AIMode Mode;
 
-        static LinkedList<FarklePlayer> Players = new LinkedList<FarklePlayer>();
+        static LinkedList<FarklePlayer> Players;
 
         static int TurnScore;
-        static int DiceToRoll = 6;
+        static int DiceToRoll;
         static Roll Roll;
-        static List<Action> ActionsPossible = new List<Action>();
-        static Action ActionPicked;
+        static List<Action> ActionsPossible;
         static LinkedListNode<FarklePlayer> PlayerWithTheDice;
+
+        static void Reset()
+        {
+            State = GameState.NoGame;
+            Mode = AIMode.Manual;
+            TurnScore = 0;
+            DiceToRoll = 6;
+            Roll = null;
+            ActionsPossible = new List<Action>();
+            Players = new LinkedList<FarklePlayer>();
+            Players.AddLast(new FarklePlayer("MrSmartyPants", PlayerType.AI));
+        }
 
         public static void Interactive()
         {
-            Players.AddLast(new FarklePlayer("MrSmartyPants", PlayerType.AI));
+            Reset();
 
             string cmd = string.Empty, cmdData = null, cmdData2 = null;
             while (!UserCommand.Quit.Equals(cmd))
@@ -84,7 +96,7 @@ namespace Farkler
                 if (Mode == AIMode.Manual || State == GameState.NoGame || PlayerWithTheDice.Value.Type == PlayerType.Human)
                 {
                     Console.Write("<farkler> $ ");
-                    var cmdtext = Console.ReadLine().Split(' ');
+                    var cmdtext = Console.ReadLine().Replace("  ", " ").Trim().Split(' ');
                     cmd = cmdtext[0];
                     cmdData = cmdtext.Length > 1 ? cmdtext[1] : null;
                     cmdData2 = cmdtext.Length > 2 ? cmdtext[2] : null;
@@ -92,15 +104,20 @@ namespace Farkler
                 else
                 {
                     Roll = Dice.RandomRoll(DiceToRoll);
+                    ActionsPossible = Farkle.Gen(Roll);
                     Console.WriteLine(Roll);
                     cmd = string.Empty;
                 }
 
                 switch (cmd)
                 {
+                    case UserCommand.Reset:
+                        Reset();
+                        break;
                     case UserCommand.AddPlayer:
                         if (State == GameState.InGame) Console.WriteLine("ERR - cannot add a player while a game is in progress.");
                         else if (cmdData == null) Console.WriteLine("ERR - (p) Usage:  p-PlayerName");
+                        else if (Players.Any(x => x.Name.Equals(cmdData))) Console.WriteLine("ERR - player with that name already exists.");
                         else
                         {
                             Players.AddLast(new FarklePlayer(cmdData));
