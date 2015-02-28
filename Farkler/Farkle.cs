@@ -17,7 +17,7 @@ namespace Farkler
     class Farkle
     {
         public static Dictionary<Roll, List<FarkleAction>> GenCache = new Dictionary<Roll, List<FarkleAction>>();
-        public static List<FarkleAction> Gen(Roll roll)
+        public static List<FarkleAction> GenerateActions(Roll roll)
         {
             List<FarkleAction> actions;
             if (GenCache.TryGetValue(roll, out actions))

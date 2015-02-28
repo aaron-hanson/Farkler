@@ -147,7 +147,7 @@ namespace Farkler
                         else
                         {
                             Roll = new Roll(cmdData);
-                            ActionsPossible = Farkle.Gen(Roll);
+                            ActionsPossible = Farkle.GenerateActions(Roll);
                             Console.WriteLine(Roll);
                         }
                         break;
@@ -243,7 +243,7 @@ namespace Farkler
         static void RandomRoll()
         {
             Roll = Dice.RandomRoll(DiceToRoll);
-            ActionsPossible = Farkle.Gen(Roll);
+            ActionsPossible = Farkle.GenerateActions(Roll);
         }
 
         static void EndTurn()

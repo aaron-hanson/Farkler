@@ -62,13 +62,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Action.cs" />
+    <Compile Include="FarkleAction.cs" />
     <Compile Include="Dice.cs" />
     <Compile Include="ExpectedValueCalc.cs" />
     <Compile Include="Farkle.cs" />
     <Compile Include="MrSmartyPants.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Roll.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

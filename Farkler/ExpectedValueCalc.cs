@@ -20,7 +20,7 @@ namespace Farkler
             if (EVCache.TryGetValue(key, out ev)) return ev;
 
             ev = Dice.Permute[d]
-                .Average(x => Farkle.Gen(x)
+                .Average(x => Farkle.GenerateActions(x)
                     .Max(y => (double?)EV(y.DiceToRoll, p + y.ScoreToAdd)) ?? 0D);
 
             ev = p < 300 ? ev : Math.Max(ev, p);
