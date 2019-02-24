@@ -65,7 +65,7 @@ namespace Farkler
             return base.GetHashCode();
         }
     }
-    
+
     class MrSmartyPants
     {
         public static bool Quiet = false;
@@ -174,16 +174,15 @@ namespace Farkler
                                 EndTurn();
                             }
                             else
-                            {
+                            { 
                                 int dice;
                                 if (!int.TryParse(cmdData2, out dice)) { WriteLine("ERR - (a) Usage:  a-400-3 (a-points-dicetoroll)"); break; }
                                 if (!ActionsPossible.Any(x => x.ScoreToAdd == points && x.DiceToRoll == dice)) { WriteLine("ERR - no matching possible action."); break; }
 
                                 TurnScore += points;
                                 DiceToRoll = dice;
-                                WriteLine("{0} STASHES {1} and ROLLS {2}", CurrentPlayerInfo(), points, dice);
-                                RandomRoll();
-                                WriteLine(Roll);
+                                WriteLine("{0} STASHES {1} and WILL ROLL {2}", CurrentPlayerInfo(), points, dice);
+                                Roll = null;
                             }
                         }
                         break;
@@ -196,7 +195,7 @@ namespace Farkler
                     default:
                         break;
                 }
-                
+
                 if (GameState.NoGame.Equals(State)) continue;
 
                 if (Roll != null)
@@ -341,7 +340,7 @@ namespace Farkler
             else
             {
                 DiceToRoll = pick.DiceToRoll;
-                WriteLine("{0} STASHES {1} and ROLLS {2}", CurrentPlayerInfo(), pick.ScoreToAdd, pick.DiceToRoll);
+                WriteLine("{0} STASHES {1} and WILL ROLL {2}", CurrentPlayerInfo(), pick.ScoreToAdd, pick.DiceToRoll);
                 return false;
             }
         }
